@@ -1,0 +1,180 @@
+.nav {
+  height: 80px;
+  background-color: var(--color-primary);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  width: 100%;
+}
+
+.nav > ul {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  text-decoration: none;
+  list-style: none;
+  background-color: var(--color-primary);
+  height: 100%;
+  width: 100%;
+}
+
+.nav > ul > li {
+  display: inline-block;
+  height: 100%;
+}
+
+.navButton {
+  color: var(--color-dark);
+  background-color: var(--color-primary);
+  height: 100%;
+  border: none;
+  padding: 0.5rem;
+  transition: opacity 250ms ease-in-out;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 150ms ease-in-out;
+}
+
+.navButton:hover {
+  background-color: var(--color-dark);
+  color: var(--color-primary);
+}
+
+.navInput {
+  margin: 0 0.5rem;
+  padding: 0.3rem;
+  width: 6.5rem;
+  text-align: center;
+}
+
+.logo {
+  position: relative;
+  height: 80px;
+  width: 80px;
+  text-align: center;
+  background-color: var(--color-dark);
+  border: none;
+  overflow: hidden;
+}
+
+.logo::before {
+  content: '';
+  position: absolute;
+  left: -25%;
+  top: -25%;
+  width: 150%;
+  height: 150%;
+  border-radius: 100%;
+  background: conic-gradient(
+    var(--color-primary) 0deg,
+    transparent 90deg,
+    transparent 170deg,
+    var(--color-primary) 180deg,
+    transparent 270deg,
+    transparent 350deg
+  );
+  animation-name: Rotate;
+  animation-duration: 5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  -webkit-animation-name: Rotate;
+  -webkit-animation-duration: 5s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-name: Rotate;
+  -moz-animation-duration: 5s;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-timing-function: linear;
+  -ms-animation-name: Rotate;
+  -ms-animation-duration: 5s;
+  -ms-animation-iteration-count: infinite;
+  -ms-animation-timing-function: linear;
+}
+
+.logoContents {
+  font-size: 0.5rem;
+  word-break: normal;
+  background-color: var(--color-dark);
+  position: absolute;
+  left: 5%;
+  top: 5%;
+  width: 90%;
+  height: 90%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 2px solid var(--color-primary-transparent);
+}
+
+.logoContents > * {
+  text-align: center;
+  text-justify: distribute;
+  line-height: 100%;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.logoContents::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 5%;
+  height: 90%;
+  width: 2px;
+  border-radius: 5px;
+  background-color: var(--color-primary-transparent);
+}
+.logoContents::after {
+  content: '';
+  position: absolute;
+  top: calc(50% - 1px);
+  left: 5%;
+  width: 90%;
+  height: 2px;
+  border-radius: 5px;
+  background-color: var(--color-primary-transparent);
+}
+
+@keyframes Rotate {
+  0% {
+    -webkit-transform: rotate(360deg);
+  }
+  100% {
+    -webkit-transform: rotate(0deg);
+  }
+}
+@-webkit-keyframes Rotate {
+  from {
+    -webkit-transform: rotate(360deg);
+  }
+  to {
+    -webkit-transform: rotate(0deg);
+  }
+}
+@-moz-keyframes Rotate {
+  from {
+    -moz-transform: rotate(360deg);
+  }
+  to {
+    -moz-transform: rotate(0deg);
+  }
+}
+@-ms-keyframes Rotate {
+  from {
+    -ms-transform: rotate(360deg);
+  }
+  to {
+    -ms-transform: rotate(0deg);
+  }
+}
+
+.textRed {
+  color: red;
+}
+
+.textYellow {
+  color: orange;
+}

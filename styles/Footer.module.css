@@ -1,0 +1,14 @@
+.footer {
+  background-color: var(--color-primary);
+  color: var(--color-dark);
+  position: fixed;
+  bottom: 0;
+  height: 3rem;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.footerContent {
+  text-align: center;
+}
