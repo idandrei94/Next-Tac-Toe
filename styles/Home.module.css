@@ -114,3 +114,22 @@
     flex-direction: column;
   }
 }
+
+.mainContainer {
+  display: grid;
+  place-items: center;
+  grid-template-columns: 1fr 2fr 1fr;
+  height: calc(100% - 3rem - 80px);
+  padding-bottom: 5rem;
+  height: auto;
+}
+
+@media screen and (max-width: 900px) {
+  .mainContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    gap: 3rem;
+  }
+}

@@ -1,0 +1,17 @@
+.chatContainer {
+  overflow-y: scroll;
+  width: 100%;
+  max-height: 60vh;
+  word-wrap: break-word;
+  padding: 1rem;
+  padding-bottom: 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media screen and (max-width: 900px) {
+  .chatContainer {
+    width: 450px;
+  }
+}

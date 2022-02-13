@@ -9,13 +9,18 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.7.2",
+    "axios": "^0.26.0",
+    "crypto-js": "^4.1.1",
     "next": "12.0.10",
+    "pusher": "^5.0.1",
+    "pusher-js": "^7.0.6",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-redux": "^7.2.6",
     "redux-toolkit": "^1.1.2"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.1.0",
     "@types/node": "17.0.17",
     "@types/react": "17.0.39",
     "eslint": "8.8.0",

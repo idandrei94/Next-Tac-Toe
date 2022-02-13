@@ -1,13 +1,19 @@
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '@/styles/Nav.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { boardActions } from 'redux-conf/boardSlice';
 import { useRouter } from 'next/router';
 import { AppRootState } from 'redux-conf/store';
-import { uiActions } from 'redux-conf/uiSlice';
+import { roomActions } from 'redux-conf/roomSlice';
+import { generateName, generatePassword } from 'utils/valueGenerators';
 
+import * as cryptojs from 'crypto-js';
+import { joinRoom, leaveRoom } from 'client/api';
+import { encryptMessage } from 'common/encryption';
 const Nav = () => {
+  const [pwd, setPwd] = useState('');
+
   const dispatch = useDispatch();
   const resetBoard = () => {
     dispatch(boardActions.reset());
@@ -15,13 +21,27 @@ const Nav = () => {
   const router = useRouter();
 
   const uiState = useSelector((state: AppRootState) => state.ui);
+  const { password, player } = useSelector((state: AppRootState) => state.room);
+  const createRoomHandler = () => {
+    setPwd('');
+    joinRoomHandler();
+  };
 
   const joinRoomHandler = () => {
-    dispatch(uiActions.joinRoom('123456'));
-    dispatch(boardActions.reset());
+    const newName = generateName();
+    const password = pwd || generatePassword(16);
+    dispatch(
+      roomActions.joinRoom({
+        name: newName,
+        password: password
+      })
+    );
+    joinRoom(encryptMessage(newName, password));
   };
+
   const leaveRoomHandler = () => {
-    dispatch(uiActions.leaveRoom());
+    dispatch(roomActions.leaveRoom());
+    leaveRoom(encryptMessage(player!, pwd));
   };
 
   return (
@@ -41,35 +61,46 @@ const Nav = () => {
           <React.Fragment>
             <li>
               <button className={styles.navButton} onClick={resetBoard}>
-                New Game
+                Reset Game
               </button>
             </li>
-            {!uiState.roomId && (
+            {!password && (
               <React.Fragment>
-                <li>
-                  <button className={styles.navButton}>Hotseat</button>
-                </li>
-                <li>
-                  <button className={styles.navButton}>Vs. AI</button>
-                </li>
-                <li>
-                  <button className={styles.navButton}>Create Room</button>
-                </li>
                 <li>
                   <button
                     className={styles.navButton}
+                    onClick={createRoomHandler}
+                  >
+                    Create Room
+                  </button>
+                </li>
+                <li>
+                  <input
+                    className={styles.navInput}
+                    value={pwd}
+                    placeholder="Room Code"
+                    onChange={(e) => setPwd(e.target.value)}
+                  />
+                  <button
+                    className={styles.navButton}
                     onClick={joinRoomHandler}
+                    disabled={!pwd || pwd.length != 16}
                   >
                     Join Room
                   </button>
                 </li>
               </React.Fragment>
             )}
-            {!!uiState.roomId && (
+            {!!password && (
               <React.Fragment>
                 <li>
-                  <button className={styles.navButton}>
-                    Joined room {uiState.roomId}
+                  <button
+                    className={styles.navButton}
+                    onClick={() => {
+                      navigator.clipboard.writeText(password);
+                    }}
+                  >
+                    Room code: {password}
                   </button>
                 </li>
                 <li>
@@ -91,11 +122,6 @@ const Nav = () => {
             </Link>
           </li>
         )}
-        <li>
-          <Link href={'/about'} passHref>
-            <button className={styles.navButton}>About</button>
-          </Link>
-        </li>
       </ul>
     </nav>
   );

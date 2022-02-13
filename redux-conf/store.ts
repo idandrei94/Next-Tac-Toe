@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import boardSlice from "./boardSlice";
+import roomSlice from "./roomSlice";
 import uiSlice from "./uiSlice";
 
 const store = configureStore({
     reducer: {
         board: boardSlice,
-        ui: uiSlice
+        ui: uiSlice,
+        room: roomSlice
     }
 });
 

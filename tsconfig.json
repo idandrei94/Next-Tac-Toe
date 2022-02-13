@@ -20,7 +20,8 @@
       "@/components/*": ["components/*"],
       "@/models/*": ["models/*"],
       "@/logic/*": ["logic/*"]
-    }
+    },
+    "rootDir": "./"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]

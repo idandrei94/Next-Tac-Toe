@@ -3,12 +3,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface State
 {
     showNavbuttons: boolean;
-    roomId: string | undefined;
+    channelName: string | undefined;
 }
 
 const initialState: State = {
     showNavbuttons: true,
-    roomId: undefined
+    channelName: undefined
 };
 
 const uiSlice = createSlice({
@@ -25,18 +25,9 @@ const uiSlice = createSlice({
             state.showNavbuttons = true;
             return state;
         },
-        joinRoom(state, action: PayloadAction<string>)
+        setChannelName(state, action: PayloadAction<string>)
         {
-            if (action.payload && !state.roomId)
-            {
-                state.roomId = action.payload;
-            }
-            return state;
-        },
-        leaveRoom(state)
-        {
-            state.roomId = undefined;
-            return state;
+            state.channelName = action.payload;
         }
     }
 });

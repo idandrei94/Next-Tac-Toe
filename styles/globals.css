@@ -33,9 +33,3 @@ body > #__next {
   --color-primary: rgb(1, 192, 160);
   --color-primary-transparent: rgba(1, 192, 160, 0.8);
 }
-
-.centerContainer {
-  display: grid;
-  place-items: center;
-  height: calc(100% - 3rem - 80px);
-}
