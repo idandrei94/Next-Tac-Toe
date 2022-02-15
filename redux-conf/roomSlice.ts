@@ -1,15 +1,18 @@
 import { Message } from '@/models/message';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { generateName, generatePassword } from 'utils/valueGenerators';
 
 const initialState: {
     player: string | undefined;
     messages: Message[];
-    password: string | undefined;
+    roomCode: string;
+    password: string;
     isOnline: boolean;
 } = {
     player: undefined,
     messages: [],
-    password: undefined,
+    roomCode: '',
+    password: '',
     isOnline: false
 };
 
@@ -21,29 +24,40 @@ const roomSlice = createSlice({
         {
             state.messages = [];
             state.player = undefined;
-            state.password = undefined;
+            state.roomCode = '';
             state.isOnline = false;
         },
-        joinRoom(state, action: PayloadAction<{ name: string, password: string; }>)
+        joinRoom(state, action: PayloadAction<{ name: string, roomCode: string; }>)
         {
-            state.password = action.payload.password;
+            state.roomCode = action.payload.roomCode;
             state.player = action.payload.name;
             state.messages = [];
-            state.isOnline = true;
+            state.isOnline = false;
             return state;
         },
         receiveMessage(state, action: PayloadAction<Message>)
         {
-            if (action.payload.sender !== 'System' || !action.payload.message.startsWith(state.player!))
-            {
-                state.messages.push(action.payload);
-                state.isOnline = true;
-            }
+            state.messages.push(action.payload);
+            state.isOnline = true;
             return state;
         },
         playerLeftRoom(state)
         {
             state.isOnline = false;
+            state.password = '';
+            state.roomCode = '';
+            return state;
+        },
+        goOnline(state)
+        {
+            state.isOnline = true;
+            return state;
+        },
+        acceptHandshake(state, action: PayloadAction<{ name: string, password: string; }>)
+        {
+            state.password = action.payload.password;
+            state.player = action.payload.name;
+            return state;
         }
     }
 });

@@ -4,6 +4,8 @@ import styles from '@/styles/Cell.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { boardActions } from 'redux-conf/boardSlice';
 import { AppRootState } from 'redux-conf/store';
+import { sendMove } from 'client/api';
+import { encryptMessage } from 'common/encryption';
 
 interface Props {
   index: number;
@@ -17,6 +19,11 @@ const Cell: React.FC<Props> = ({ index, value }) => {
     (state: AppRootState) => state.board.isReadOnly
   );
 
+  const { isOnline, roomCode, password, player } = useSelector(
+    (state: AppRootState) => state.room
+  );
+  const token = useSelector((state: AppRootState) => state.board.currentTurn);
+
   const getCellClasses = (status: CellState) => {
     switch (status) {
       case 'E':
@@ -29,7 +36,21 @@ const Cell: React.FC<Props> = ({ index, value }) => {
   };
 
   const handleCellClicked = () => {
-    dispatch(boardActions.placeToken({ index }));
+    dispatch(boardActions.placeToken({ index, withSwap: !isOnline }));
+    if (isOnline) {
+      sendMove(
+        JSON.stringify({
+          message: encryptMessage(
+            JSON.stringify({
+              index: index,
+              player: player
+            }),
+            password
+          )
+        }),
+        roomCode
+      );
+    }
   };
 
   return (

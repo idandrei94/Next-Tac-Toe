@@ -9,9 +9,7 @@ import EndGameBanner from './EndGameBanner';
 const Board = () => {
   const { board } = useSelector((state: AppRootState) => state.board);
 
-  const isGameOver = useSelector(
-    (state: AppRootState) => state.board.isReadOnly
-  );
+  const isGameOver = useSelector((state: AppRootState) => !!state.board.winner);
   return (
     <div className={styles.container}>
       {new Array(9).fill(0).map((__, i) => (

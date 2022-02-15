@@ -1,55 +1,153 @@
 import { Message } from "@/models/message";
 import { Channel } from "pusher-js";
-import { Dispatch } from "react";
 import { roomActions } from "redux-conf/roomSlice";
 import store from "redux-conf/store";
 import RoomEvents from "common/roomEvents";
-import { decryptMessage } from "common/encryption";
+import { decryptMessage, encryptMessage } from "common/encryption";
+import { boardActions } from "redux-conf/boardSlice";
+import { confirmHandshake, sendHandshake } from "./api";
+import { generateName, generatePassword } from "utils/valueGenerators";
 
-const bindEventHandlers = (dispatch: Dispatch<any>, channel: Channel) =>
+const bindEventHandlers = (channel: Channel) =>
 {
-    channel.bind(RoomEvents.MESSAGE, (data: string) =>
+    channel.bind(RoomEvents.MESSAGE, (data: { message: string; }) =>
     {
-        const decryptedData = tryDecryptMessage(data);
-        console.log('received message ', decryptedData);
+        const { password } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, password);
         if (decryptedData)
         {
             const message: Message = JSON.parse(decryptedData);
-            console.log(message);
             dispatch(roomActions.receiveMessage(message));
         }
     });
-    channel.bind(RoomEvents.PLAYER_JOINED, (data: string) =>
+    channel.bind(RoomEvents.PLAYER_JOINED, (data: { message: string; }) =>
     {
-        console.log('player joined ', data);
-        const decryptedData = tryDecryptMessage(data);
-        console.log('decr', decryptedData);
+        const dispatch = store.dispatch;
+        const { roomCode, player } = store.getState().room;
+        const decryptedData = tryDecryptMessage(data, roomCode);
         if (decryptedData)
         {
-            console.log('player joined ', decryptedData);
+            // if I am not the one who joined, then I'm the host
+            if (player !== decryptedData)
+            {
+                const playerName = generateName();
+                const pwd = generatePassword(64);
+                dispatch(roomActions.acceptHandshake({ name: playerName, password: pwd }));
+                sendHandshake(
+                    JSON.stringify({
+                        message: encryptMessage(JSON.stringify({
+                            host: playerName,
+                            name: generateName([playerName]),
+                            password: pwd
+                        }), roomCode)
+                    }), roomCode);
+            }
+        }
+    });
+    channel.bind(RoomEvents.PLAYER_LEFT, (data: { message: string; }) =>
+    {
+        const { password, player } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, password);
+        if (decryptedData)
+        {
+            if (decryptedData !== player)
+            {
+                dispatch(roomActions.receiveMessage({
+                    sender: 'System',
+                    message: `${decryptedData} has left the room.`
+                }));
+            }
+            dispatch(roomActions.playerLeftRoom());
+            dispatch(boardActions.reset(false));
+        }
+    });
+    channel.bind(RoomEvents.HANDSHAKE, (data: { message: string; }) =>
+    {
+        const { roomCode, player } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, roomCode);
+        if (decryptedData)
+        {
+            const { host, name, password } = JSON.parse(`${decryptedData}`);
+            if (player !== host)
+            {
+                dispatch(roomActions.acceptHandshake({
+                    name, password
+                }));
+                confirmHandshake(
+                    JSON.stringify({
+                        message: encryptMessage(
+                            JSON.stringify({ name: name, host: host }),
+                            password)
+                    }),
+                    roomCode);
+            } else
+            {
+                console.log('Ignoring handshake');
+            }
+        }
+    });
+    channel.bind(RoomEvents.HANDHSAKE_CONFIRMED, (data: { message: string; }) =>
+    {
+        const { player, password } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, password);
+        if (decryptedData)
+        {
+            const { host, name } = JSON.parse(decryptedData);
+            dispatch(roomActions.goOnline);
+            dispatch(boardActions.setCurrentToken(
+                host === player ? 'X' : 'O')
+            );
             dispatch(roomActions.receiveMessage({
                 sender: 'System',
-                message: `${decryptedData} has joined the room, say hi!`
+                message: host === player ?
+                    `${name} has joined the room, say hi!` :
+                    `Welcome to ${host}'s room`
             }));
         }
     });
-    channel.bind(RoomEvents.PLAYER_LEFT, (data: string) =>
+    channel.bind(RoomEvents.CLEAR_BOARD, (data: { message: string; }) =>
     {
-        const decryptedData = tryDecryptMessage(data);
+        const { password, player } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, password);
+        if (decryptedData && player !== decryptedData)
+        {
+            dispatch(
+                boardActions.reset(true)
+            );
+        }
+        dispatch(roomActions.receiveMessage({
+            sender: 'System',
+            message: `${decryptedData} cleared the board!.`
+        }));
+    });
+    channel.bind(RoomEvents.BOARD_UPDATE, (data: { message: string; }) =>
+    {
+        const { password, player } = store.getState().room;
+        const dispatch = store.dispatch;
+        const decryptedData = tryDecryptMessage(data, password);
         if (decryptedData)
         {
-            dispatch(roomActions.receiveMessage({
-                sender: 'System',
-                message: `${decryptedData} has left the room.`
-            }));
+            const { player: movingPlayer, index } = JSON.parse(decryptedData);
+            if (player !== movingPlayer)
+            {
+                dispatch(boardActions.placeToken({
+                    index: Number.parseInt(index),
+                    withSwap: false
+                }));
+            }
         }
     });
 };
 
-const tryDecryptMessage = (message: string) =>
+const tryDecryptMessage = (message: { message: string; }, key: string): string | undefined =>
 {
-    const pwd = store.getState().room.password;
-    return pwd ? decryptMessage(message, pwd) : undefined;
+    const msg = decryptMessage(message.message, key);
+    return msg;
 };
 
 export default bindEventHandlers;

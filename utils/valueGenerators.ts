@@ -44,7 +44,7 @@ const colors = [
 export const generateName = (exclusions: string[] = []) =>
 {
     const filteredList = names.filter(n => !exclusions.find(e => e === n));
-    return `${generatePassword(16)}${filteredList[Math.floor(Math.random() * filteredList.length - 1)]}`;
+    return filteredList[Math.floor(Math.random() * filteredList.length - 1)];
 };
 
 export const generateColor = (exclusions: string[] = []) =>

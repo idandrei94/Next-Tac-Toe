@@ -3,12 +3,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface State
 {
     showNavbuttons: boolean;
-    channelName: string | undefined;
 }
 
 const initialState: State = {
     showNavbuttons: true,
-    channelName: undefined
 };
 
 const uiSlice = createSlice({
@@ -24,10 +22,6 @@ const uiSlice = createSlice({
         {
             state.showNavbuttons = true;
             return state;
-        },
-        setChannelName(state, action: PayloadAction<string>)
-        {
-            state.channelName = action.payload;
         }
     }
 });

@@ -10,18 +10,26 @@ const ChatWindow = () => {
   const messages = useSelector((state: AppRootState) => state.room.messages);
 
   const [message, setMessage] = useState('');
-  const { player, password } = useSelector((state: AppRootState) => state.room);
+  const { player, password, roomCode } = useSelector(
+    (state: AppRootState) => state.room
+  );
 
   const sendMessage = () => {
-    sendMessageToApi(
-      encryptMessage(
+    if (message) {
+      sendMessageToApi(
         JSON.stringify({
-          sender: player,
-          message: message
+          message: encryptMessage(
+            JSON.stringify({
+              sender: player,
+              message: message
+            }),
+            password!
+          )
         }),
-        password!
-      )
-    );
+        roomCode!
+      );
+    }
+    setMessage('');
   };
 
   return (

@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Pusher from "pusher";
 
-const handleServerPusherRequest = async (req: NextApiRequest, res: NextApiResponse, event: string) =>
+const handleServerPusherRequest = async (req: NextApiRequest, res: NextApiResponse) =>
 {
     if (req.method === 'POST')
     {
-        const { message } = req.body;
+        const { message, event, channel } = req.body;
         if (message)
         {
             var pusher = new Pusher({
@@ -14,8 +14,7 @@ const handleServerPusherRequest = async (req: NextApiRequest, res: NextApiRespon
                 secret: process.env.SECRET!,
                 cluster: process.env.CLUSTER!,
             });
-
-            await pusher.trigger(process.env.CHANNEL_NAME!, event, message);
+            await pusher.trigger(channel, event, message);
             return res.status(200).send({});
         } else
         {

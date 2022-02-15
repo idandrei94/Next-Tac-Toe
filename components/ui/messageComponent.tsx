@@ -13,15 +13,12 @@ const getColor = (sender: string, player: string) => {
 
 const MessageComponent: React.FC<Message> = ({ message, sender }) => {
   const player = useSelector((state: AppRootState) => state.room.player);
-
-  const senderName = sender === 'System' ? sender : sender.substring(16);
-  const cleanedMessage = sender === 'System' ? message.substring(16) : message;
   return (
     <p>
       <span style={{ color: getColor(sender, player!) }}>
-        {senderName} {player === sender ? '(You)' : ''}
+        {sender} {player === sender ? '(You)' : ''}
       </span>
-      : {cleanedMessage}
+      : {message}
     </p>
   );
 };

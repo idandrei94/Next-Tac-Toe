@@ -5,11 +5,10 @@ import styles from '@/styles/Home.module.css';
 import Board from '@/components/game/board';
 import ChatWindow from '@/components/ui/chatWindow';
 import { useEffect, useState } from 'react';
-import { uiActions } from 'redux-conf/uiSlice';
 import pusher from 'pusher-js';
 import bindEventHandlers from 'client/messageHandler';
-import { roomActions } from 'redux-conf/roomSlice';
-import { generateName, generatePassword } from 'utils/valueGenerators';
+import { joinRoom, leaveRoom } from 'client/api';
+import { encryptMessage } from 'common/encryption';
 
 interface Props {
   channelName: string;
@@ -17,9 +16,11 @@ interface Props {
   cluster: string;
 }
 
-const Home: NextPage<Props> = ({ channelName, appKey, cluster }) => {
-  const isOnline = useSelector((state: AppRootState) => state.room.isOnline);
+const Home: NextPage<Props> = ({ appKey, cluster }) => {
   const dispatch = useDispatch();
+  const { isOnline, roomCode, player, password } = useSelector(
+    (state: AppRootState) => state.room
+  );
 
   const [pusherChannel] = useState(
     new pusher(appKey, {
@@ -28,15 +29,23 @@ const Home: NextPage<Props> = ({ channelName, appKey, cluster }) => {
   );
 
   useEffect(() => {
-    dispatch(uiActions.setChannelName(channelName));
-    bindEventHandlers(dispatch, pusherChannel.subscribe(channelName));
-    dispatch(
-      roomActions.joinRoom({
-        name: generateName(),
-        password: generatePassword()
-      })
-    );
-  }, [dispatch, channelName, pusherChannel]);
+    const channels = pusherChannel.channels.all().map((c) => c.name);
+    for (let channel of channels.filter((c) => c !== roomCode)) {
+      pusherChannel.unsubscribe(channel);
+      if (player) {
+        leaveRoom(encryptMessage(player, password), password);
+      }
+    }
+    if (player && roomCode && !channels.find((c) => c === roomCode)) {
+      bindEventHandlers(pusherChannel.subscribe(roomCode));
+      joinRoom(
+        JSON.stringify({
+          message: encryptMessage(player, roomCode)
+        }),
+        roomCode
+      );
+    }
+  }, [pusherChannel, roomCode, dispatch, player, password]);
 
   return (
     <div className={styles.mainContainer}>

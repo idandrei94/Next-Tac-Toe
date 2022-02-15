@@ -7,41 +7,55 @@ import { useRouter } from 'next/router';
 import { AppRootState } from 'redux-conf/store';
 import { roomActions } from 'redux-conf/roomSlice';
 import { generateName, generatePassword } from 'utils/valueGenerators';
-
-import * as cryptojs from 'crypto-js';
-import { joinRoom, leaveRoom } from 'client/api';
+import { joinRoom, leaveRoom, sendReset } from 'client/api';
 import { encryptMessage } from 'common/encryption';
 const Nav = () => {
   const [pwd, setPwd] = useState('');
 
   const dispatch = useDispatch();
-  const resetBoard = () => {
-    dispatch(boardActions.reset());
-  };
   const router = useRouter();
 
   const uiState = useSelector((state: AppRootState) => state.ui);
-  const { password, player } = useSelector((state: AppRootState) => state.room);
+  const { roomCode, player, password, isOnline } = useSelector(
+    (state: AppRootState) => state.room
+  );
+
+  const resetBoard = () => {
+    dispatch(boardActions.reset(isOnline));
+    if (isOnline) {
+      sendReset(
+        JSON.stringify({
+          message: encryptMessage(player!, password)
+        }),
+        roomCode
+      );
+    }
+  };
+
   const createRoomHandler = () => {
     setPwd('');
     joinRoomHandler();
   };
 
   const joinRoomHandler = () => {
-    const newName = generateName();
-    const password = pwd || generatePassword(16);
+    const newName = generatePassword(32);
+    const roomCode = pwd || generatePassword(16);
     dispatch(
       roomActions.joinRoom({
         name: newName,
-        password: password
+        roomCode: roomCode
       })
     );
-    joinRoom(encryptMessage(newName, password));
   };
 
   const leaveRoomHandler = () => {
+    leaveRoom(
+      JSON.stringify({
+        message: encryptMessage(player!, password)
+      }),
+      roomCode
+    );
     dispatch(roomActions.leaveRoom());
-    leaveRoom(encryptMessage(player!, pwd));
   };
 
   return (
@@ -64,7 +78,7 @@ const Nav = () => {
                 Reset Game
               </button>
             </li>
-            {!password && (
+            {!roomCode && (
               <React.Fragment>
                 <li>
                   <button
@@ -76,6 +90,7 @@ const Nav = () => {
                 </li>
                 <li>
                   <input
+                    autoComplete="off"
                     className={styles.navInput}
                     value={pwd}
                     placeholder="Room Code"
@@ -91,16 +106,16 @@ const Nav = () => {
                 </li>
               </React.Fragment>
             )}
-            {!!password && (
+            {!!roomCode && (
               <React.Fragment>
                 <li>
                   <button
                     className={styles.navButton}
                     onClick={() => {
-                      navigator.clipboard.writeText(password);
+                      navigator.clipboard.writeText(roomCode);
                     }}
                   >
-                    Room code: {password}
+                    Room code: {roomCode}
                   </button>
                 </li>
                 <li>
