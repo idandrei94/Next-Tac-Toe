@@ -15,13 +15,13 @@ const ChatWindow = () => {
   );
 
   const sendMessage = () => {
-    if (message) {
+    if (message.trim()) {
       sendMessageToApi(
         JSON.stringify({
           message: encryptMessage(
             JSON.stringify({
               sender: player,
-              message: message
+              message: message.trim()
             }),
             password!
           )
@@ -43,7 +43,7 @@ const ChatWindow = () => {
         <input
           type="text"
           value={message}
-          onChange={(e) => setMessage(e.target.value?.trim())}
+          onChange={(e) => setMessage(e.target.value)}
           onKeyUp={(e) => {
             e.code === 'Enter' ? sendMessage() : undefined;
           }}

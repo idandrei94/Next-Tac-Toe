@@ -30,20 +30,8 @@ const Home: NextPage<Props> = ({ appKey, cluster }) => {
 
   useEffect(() => {
     const channels = pusherChannel.channels.all().map((c) => c.name);
-    for (let channel of channels.filter((c) => c !== roomCode)) {
-      pusherChannel.unsubscribe(channel);
-      if (player) {
-        leaveRoom(encryptMessage(player, password), password);
-      }
-    }
     if (player && roomCode && !channels.find((c) => c === roomCode)) {
-      bindEventHandlers(pusherChannel.subscribe(roomCode));
-      joinRoom(
-        JSON.stringify({
-          message: encryptMessage(player, roomCode)
-        }),
-        roomCode
-      );
+      bindEventHandlers(pusherChannel.subscribe(roomCode), pusherChannel);
     }
   }, [pusherChannel, roomCode, dispatch, player, password]);
 

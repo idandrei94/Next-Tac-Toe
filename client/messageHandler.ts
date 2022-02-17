@@ -1,15 +1,43 @@
 import { Message } from "@/models/message";
-import { Channel } from "pusher-js";
+import pusher, { Channel } from "pusher-js";
 import { roomActions } from "redux-conf/roomSlice";
 import store from "redux-conf/store";
 import RoomEvents from "common/roomEvents";
 import { decryptMessage, encryptMessage } from "common/encryption";
 import { boardActions } from "redux-conf/boardSlice";
-import { confirmHandshake, sendHandshake } from "./api";
+import { confirmHandshake, joinRoom, leaveRoom, sendHandshake } from "./api";
 import { generateName, generatePassword } from "utils/valueGenerators";
 
-const bindEventHandlers = (channel: Channel) =>
+const bindEventHandlers = (channel: Channel, pusher: pusher) =>
 {
+    channel.bind('pusher:subscription_succeeded', () =>
+    {
+        const { player, roomCode, password } = store.getState().room;
+        joinRoom(
+            JSON.stringify({
+                message: encryptMessage(player!, roomCode)
+            }),
+            roomCode
+        );
+        if (player && roomCode && password)
+        {
+            console.log(pusher.allChannels().map(c => c.name));
+            const channels = pusher
+                .allChannels()
+                .filter(c => c.name !== roomCode)
+                .map(c => c.name);
+            for (let cn of channels)
+            {
+                console.log('unsubbing from ', cn);
+                leaveRoom(encryptMessage(player, password), password);
+                pusher.unsubscribe(cn);
+            }
+        }
+    });
+    channel.bind('pusher:subscription_error', (data: any) =>
+    {
+        console.log('sub error ', data);
+    });
     channel.bind(RoomEvents.MESSAGE, (data: { message: string; }) =>
     {
         const { password } = store.getState().room;
