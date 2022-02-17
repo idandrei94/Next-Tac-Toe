@@ -24,12 +24,12 @@ const bindEventHandlers = (channel: Channel) =>
     channel.bind(RoomEvents.PLAYER_JOINED, (data: { message: string; }) =>
     {
         const dispatch = store.dispatch;
-        const { roomCode, player } = store.getState().room;
+        const { roomCode, player, password } = store.getState().room;
         const decryptedData = tryDecryptMessage(data, roomCode);
         if (decryptedData)
         {
             // if I am not the one who joined, then I'm the host
-            if (player !== decryptedData)
+            if (player !== decryptedData && !password)
             {
                 const playerName = generateName();
                 const pwd = generatePassword(64);
@@ -122,7 +122,7 @@ const bindEventHandlers = (channel: Channel) =>
         }
         dispatch(roomActions.receiveMessage({
             sender: 'System',
-            message: `${decryptedData} cleared the board!.`
+            message: `${decryptedData} cleared the board!`
         }));
     });
     channel.bind(RoomEvents.BOARD_UPDATE, (data: { message: string; }) =>

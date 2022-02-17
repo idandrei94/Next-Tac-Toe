@@ -25,7 +25,7 @@ const Nav = () => {
     if (isOnline) {
       sendReset(
         JSON.stringify({
-          message: encryptMessage(player!, password)
+          message: encryptMessage(player!, roomCode)
         }),
         roomCode
       );

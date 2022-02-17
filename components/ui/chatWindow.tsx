@@ -43,7 +43,7 @@ const ChatWindow = () => {
         <input
           type="text"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => setMessage(e.target.value?.trim())}
           onKeyUp={(e) => {
             e.code === 'Enter' ? sendMessage() : undefined;
           }}
